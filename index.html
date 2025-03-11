@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KnNHS Upload & Share Portal</title>
+  <link href="https://fonts.googleapis.com/css?family=Orbitron:400,500,700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0a0a0a;
+      color: rgb(195, 64, 255);
+      font-family: 'Orbitron', sans-serif;
+      overflow-x: hidden;
+    }
+    h1, h2 {
+      text-align: center;
+      text-shadow: 0 0 10px #b700ff;
+    }
+    header {
+      padding: 30px 0;
+      animation: neon 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes neon {
+      0%, 100% {
+        text-shadow:
+          0 0 5px #b700ff,
+          0 0 10px #b700ff,
+          0 0 20px #b700ff,
+          0 0 30px #b700ff;
+      }
+      50% {
+        text-shadow:
+          0 0 10px #b700ff,
+          0 0 20px #b700ff,
+          0 0 30px #b700ff,
+          0 0 40px #b700ff;
+      }
+    }
+    /* Container & Layout */
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .main-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .content-section {
+      width: 65%;
+    }
+    /* Chat Container with fixed height */
+    .chat-container {
+      width: 30%;
+      margin-left: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+    }
+    /* Chat Window now scrolls internally */
+    .chat-window {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid #b700ff;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      box-shadow: 0 0 20px #b700ff;
+    }
+    .chat-controls {
+      margin-top: 10px;
+    }
+    .chat-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #b700ff;
+      border-radius: 4px;
+      background: transparent;
+      color: #b700ff;
+      font-size: 1em;
+    }
+    .chat-send {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #b700ff;
+      color: #0a0a0a;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 5px;
+      transition: background 0.3s ease;
+    }
+    .chat-send:hover {
+      background: #b700ff;
+    }
+    /* Section Styling */
+    .section {
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid #b700ff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 20px #b700ff;
+      transition: transform 0.3s ease;
+    }
+    .section:hover {
+      transform: scale(1.02);
+    }
+    /* Iframe Styling */
+    iframe {
+      width: 100%;
+      border: none;
+      height: 400px;
+    }
+    /* Input Styling */
+    input[type="file"],
+    input[type="text"],
+    input[type="submit"] {
+      display: block;
+      width: 100%;
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #b700ff;
+      border-radius: 4px;
+      background: transparent;
+      color: #b700ff;
+      font-size: 1em;
+    }
+    input[type="submit"] {
+      background: #b700ff;
+      border: none;
+      color: #0a0a0a;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    input[type="submit"]:hover {
+      background: #b700ff;
+    }
+    /* Footer Styling */
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      color: rgb(195, 64, 255);
+      background: rgba(0, 0, 0, 0.85);
+      border-top: 1px solid #b700ff;
+      margin-top: 30px;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 5px #b700ff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>KnNHS ICT Connect</h1>
+  </header>
+  <div class="container">
+    <div class="main-container">
+      <!-- Content Section (Left Side) -->
+      <div class="content-section">
+        <!-- File List Section -->
+        <section class="section file-list">
+          <h2>Uploaded Files</h2>
+          <iframe id="fileFrame" src="/files"></iframe>
+        </section>
+        <!-- Upload Form Section -->
+        <section class="section upload-form">
+          <h2>Upload a File</h2>
+          <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <input type="submit" value="Upload">
+          </form>
+        </section>
+      </div>
+      <!-- Chat Container (Right Side) -->
+      <div class="chat-container">
+        <div class="chat-window" id="chatWindow">
+          <!-- Chat messages will appear here -->
+        </div>
+        <div class="chat-controls">
+          <input type="text" id="chatInput" class="chat-input" placeholder="Type your message here...">
+          <button id="sendButton" class="chat-send">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer Section -->
+  <footer>
+    Made by: u/Ecstatic_Future_893
+  </footer>
+  <script>
+    // WebSocket chat functionality
+    const ws = new WebSocket('ws://' + window.location.hostname + '/ws');
+    const chatWindow = document.getElementById('chatWindow');
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.getElementById('sendButton');
+
+    ws.onopen = () => {
+      addMessage("Connected to chat.");
+    };
+
+    ws.onmessage = event => {
+      addMessage(event.data);
+    };
+
+    ws.onerror = error => {
+      addMessage("WebSocket error: " + error);
+    };
+
+    function addMessage(message) {
+      const msgElem = document.createElement('p');
+      msgElem.textContent = message;
+      chatWindow.appendChild(msgElem);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    sendButton.onclick = () => {
+      if (chatInput.value.trim() !== "") {
+        ws.send(chatInput.value);
+        chatInput.value = "";
+      }
+    };
+
+    chatInput.addEventListener("keyup", event => {
+      if (event.key === "Enter") {
+        sendButton.click();
+      }
+    });
+  </script>
+</body>
+</html>
