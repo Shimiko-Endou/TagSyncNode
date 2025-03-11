@@ -1,3 +1,5 @@
+// Made by a student from Kinatakutan National High School
+
 #include <WiFi.h>
 #include <SD.h>
 #include <SPI.h>
