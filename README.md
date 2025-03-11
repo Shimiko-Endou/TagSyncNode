@@ -4,6 +4,7 @@ A ESP32-powered NAS (or just a localized file-sharing system, honestly, call it 
 Ever seen your school's IT admin or teacher manually copying files between computers every time your class submits an output with his/her flash drive? Painful, right? Well, TagSyncNode solves that.
 
 All you need is:
+
 ✔ A breadboard or perfboard (as long as it conducts electricity, you're good)
 
 ✔ A MFRC522 RFID module
